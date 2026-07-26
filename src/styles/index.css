@@ -6,7 +6,10 @@
    --color-term is the PRIMARY accent and is overridden at runtime by the
    equipped theme cosmetic (see App.tsx). */
 @theme {
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* JetBrains Mono covers Latin/Cyrillic; the CJK families + generic sans-serif
+     are per-glyph fallbacks so the Chinese (zh) locale renders instead of tofu
+     on systems whose default monospace lacks CJK. No CJK webfont is bundled. */
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, 'Noto Sans Mono CJK SC', 'Noto Sans CJK SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', monospace, sans-serif;
   --font-terminal: 'Space Grotesk Variable', 'Space Grotesk', system-ui, sans-serif;
 
   --color-bg: #0b0d14; /* indigo-black */

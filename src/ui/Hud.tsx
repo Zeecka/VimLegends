@@ -72,7 +72,7 @@ export function Hud({
   }
 
   return (
-    <header className="relative z-20 flex items-center justify-between gap-3 border-b border-border bg-panel/70 px-4 py-3 backdrop-blur">
+    <header className="relative z-20 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-panel/70 px-4 py-3 backdrop-blur">
       <button
         onClick={() => {
           sfx.ui()
@@ -86,8 +86,8 @@ export function Hud({
         </span>
       </button>
 
-      <div className="flex items-center gap-2 sm:gap-3">
-        <nav className="flex items-center gap-1 sm:gap-2" aria-label="Main">
+      <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
+        <nav className="flex flex-wrap items-center gap-1 sm:gap-2" aria-label="Main">
           <button
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => {

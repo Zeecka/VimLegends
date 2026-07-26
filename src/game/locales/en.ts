@@ -86,7 +86,9 @@ export const en: Record<string, string> = {
   'campaign.quit': 'Quit',
   'campaign.quitTitle': 'Leave this level and return to the world map',
   'campaign.hintLabel': 'Hint',
-  'campaign.bossIntegrity': 'Boss integrity',
+  'campaign.needsKeyboard': 'This level needs a physical keyboard — it plays best on a computer.',
+  'campaign.tryQuiz': 'Try the Quiz →',
+  'campaign.bossIntegrity': 'Keystroke budget',
   'campaign.keystrokesLeft': '{n} keystrokes left',
   'campaign.repelled': 'REPELLED!',
   'campaign.repelledBody':
@@ -125,7 +127,7 @@ export const en: Record<string, string> = {
   'arcade.timeUp': 'TIME!',
   'arcade.scoreLabel': 'Score',
   'arcade.newBest': 'new best!',
-  'arcade.readyHint': 'Move the cursor onto the mole before it moves. Speed builds your combo.',
+  'arcade.readyHint': 'Move the cursor onto the `@` before it moves. Speed builds your combo.',
   'arcade.playAgain': 'Play Again',
   'arcade.start': 'Start',
 
@@ -182,7 +184,7 @@ export const en: Record<string, string> = {
     'In NORMAL mode, `h` `j` `k` `l` move left / down / up / right. It feels strange for a day, then your hands never leave the home row. No mouse needed — ever.',
   'howto.step3.title': 'Every keystroke counts',
   'howto.step3.body':
-    "Each level has a task and a goal — the fewest keystrokes a pro would use. Match or beat the goal for ⭐⭐⭐. It's golf: think, don't mash.",
+    "Each level has a task and a goal — the fewest keystrokes a pro would use. Match or beat the goal for ★★★. It's golf: think, don't mash.",
   'howto.step4.title': 'Never stuck',
   'howto.step4.body':
     'Below the editor: "Need a hint?" spells out the move, "Cheatsheet" lists every command, and "Restart" resets the level if you tangle it up. You can\'t break anything.',
@@ -205,7 +207,7 @@ export const en: Record<string, string> = {
   'cheatsheet.takeItWithYou': 'Take it with you:',
   'cheatsheet.markdown': 'Markdown',
   'cheatsheet.html': 'HTML',
-  'cheatsheet.printPdf': 'Print / PDF',
+  'cheatsheet.printPdf': 'Download PDF',
   'cheatsheet.downloadedMd': 'Downloaded Markdown ✓',
   'cheatsheet.downloadedHtml': 'Downloaded HTML ✓',
   'cheatsheet.downloadedPdf': 'Downloaded PDF ✓',

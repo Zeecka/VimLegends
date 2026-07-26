@@ -19,9 +19,10 @@ interface Props {
   challenge: Challenge
   onPlay: (id: string) => void
   onMap: () => void
+  onQuiz: () => void
 }
 
-export function CampaignMode({ challenge, onPlay, onMap }: Props) {
+export function CampaignMode({ challenge, onPlay, onMap, onQuiz }: Props) {
   const complete = useGame((s) => s.completeChallenge)
   const seenPrimer = useGame((s) => s.seenPrimer)
   const markPrimerSeen = useGame((s) => s.markPrimerSeen)
@@ -36,6 +37,14 @@ export function CampaignMode({ challenge, onPlay, onMap }: Props) {
   const [reaction, setReaction] = useState<Reaction>('idle')
   const [stageIdx, setStageIdx] = useState(0)
   const [failed, setFailed] = useState(false)
+  // Touch/no-keyboard devices can't type Vim keystrokes; nudge them to the Quiz.
+  const [needsKeyboard] = useState(() => {
+    try {
+      return window.matchMedia('(pointer: coarse)').matches
+    } catch {
+      return false
+    }
+  })
   const editorRef = useRef<VimEditorHandle>(null)
   const idleTimer = useRef<number | undefined>(undefined)
 
@@ -171,13 +180,27 @@ export function CampaignMode({ challenge, onPlay, onMap }: Props) {
   return (
     <div className="relative mx-auto max-w-5xl px-4 py-6">
       <div className="flex flex-col gap-4 lg:flex-row">
-        {/* Hero companion */}
-        <div className="lg:w-72 lg:shrink-0">
+        {/* Hero companion — hidden on small screens so the challenge isn't pushed
+            below the fold (the panel is a wide sidebar built for lg+). */}
+        <div className="hidden lg:block lg:w-72 lg:shrink-0">
           <HeroPanel reaction={reaction} />
         </div>
 
         {/* Play column */}
         <div className="flex flex-1 flex-col">
+          {/* Touch devices can't type Vim keystrokes — point them at the Quiz. */}
+          {needsKeyboard && (
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-amber/40 bg-amber/10 px-3.5 py-2.5 text-sm text-ink">
+              <Emoji name="keyboard" size={16} />
+              <span className="flex-1">{t('campaign.needsKeyboard')}</span>
+              <button
+                onClick={onQuiz}
+                className="rounded-full border border-term px-3 py-1 text-xs font-bold text-term transition-colors hover:bg-term/10"
+              >
+                {t('campaign.tryQuiz')}
+              </button>
+            </div>
+          )}
           <div className="flex items-start justify-between gap-4">
             <div>
               {isBoss ? (

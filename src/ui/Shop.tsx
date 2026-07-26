@@ -100,6 +100,7 @@ function CharacterStudio() {
           return (
             <button
               key={c.id}
+              disabled={locked}
               onClick={() => {
                 if (isEquipped) return
                 if (isOwned) {
@@ -176,10 +177,12 @@ function CharacterStudio() {
             const isOwned = owned.includes(finishSku(f.id))
             const isActive = hero.finish === f.id
             const canAfford = coins >= f.price
+            const locked = !isOwned && !canAfford
             const fname = t(`finish.${f.id}.name`, undefined, f.name)
             return (
               <button
                 key={f.id}
+                disabled={locked}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   if (isOwned) {

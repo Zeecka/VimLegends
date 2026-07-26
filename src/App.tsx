@@ -182,7 +182,12 @@ export default function App() {
             {screen.name === 'profile' && <Profile publicId={screen.publicId} onPlay={leaveProfile} />}
             {screen.name === 'play' &&
               (challenge ? (
-                <CampaignMode challenge={challenge} onPlay={play} onMap={() => go({ name: 'map' })} />
+                <CampaignMode
+                  challenge={challenge}
+                  onPlay={play}
+                  onMap={() => go({ name: 'map' })}
+                  onQuiz={() => go({ name: 'quiz' })}
+                />
               ) : (
                 <Fallback onHome={() => go({ name: 'home' })} />
               ))}
