@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CHALLENGES, WORLDS } from '../src/content/tiers'
+import { CHALLENGES, WORLDS, challengesForTier, tierUnlocked } from '../src/content/tiers'
 import { COMMANDS, COMMANDS_BY_ID } from '../src/game/commands'
 import { stagesOf } from '../src/game/types'
 import { createEditor, goalMet } from './driver'
@@ -73,5 +73,20 @@ describe('content integrity', () => {
         view.destroy()
       }
     }
+  })
+})
+
+describe('world/tier wiring', () => {
+  const standardForTier = (tier: number) =>
+    challengesForTier(tier as (typeof WORLDS)[number]['tier']).filter((c) => (c.kind ?? 'standard') !== 'boss')
+
+  it('tier 1 is unlocked from a clean save; tier 2 is not', () => {
+    expect(tierUnlocked(1, {})).toBe(true)
+    expect(tierUnlocked(2, {})).toBe(false)
+  })
+
+  it('clearing tier 1 standard levels unlocks tier 2', () => {
+    const completed = Object.fromEntries(standardForTier(1).map((c) => [c.id, true]))
+    expect(tierUnlocked(2, completed)).toBe(true)
   })
 })

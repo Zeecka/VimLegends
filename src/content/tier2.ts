@@ -104,6 +104,17 @@ export const tier2: Challenge[] = [
     hint: '`gg` jumps to the top line, `G` to the bottom. `dd` deletes a line.',
   },
   {
+    id: 't2-open-above',
+    tier: 2,
+    title: 'Prepend',
+    brief: 'This module is missing its import. Open a line ABOVE with `O` and type `import sys`.',
+    taughtCommands: ['O'],
+    startText: 'def main():',
+    goal: { targetText: ['import sys', 'def main():'].join('\n'), describe: 'An "import sys" line sits above def main()' },
+    par: 12, // Oimport sys<Esc>
+    hint: '`o` opens a line BELOW the cursor; its capital, `O`, opens one ABOVE — and drops you into insert mode there. Type `import sys`, then `Esc`.',
+  },
+  {
     id: 't2-capstone',
     tier: 2,
     title: 'Quick Refactor',
@@ -114,16 +125,5 @@ export const tier2: Challenge[] = [
     goal: { targetText: 'the dog sat', describe: 'Buffer reads: the dog sat' },
     par: 10,
     hint: '`w` to cat, `cw` → type `dog` → `Esc`. Then `j` down to the junk line and `dd`.',
-  },
-  {
-    id: 't2-open-above',
-    tier: 2,
-    title: 'Prepend',
-    brief: 'This module is missing its import. Open a line ABOVE with `O` and type `import sys`.',
-    taughtCommands: ['O'],
-    startText: 'def main():',
-    goal: { targetText: ['import sys', 'def main():'].join('\n'), describe: 'An "import sys" line sits above def main()' },
-    par: 12, // Oimport sys<Esc>
-    hint: '`o` opens a line BELOW the cursor; its capital, `O`, opens one ABOVE — and drops you into insert mode there. Type `import sys`, then `Esc`.',
   },
 ]
