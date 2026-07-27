@@ -71,8 +71,9 @@ function bgPreviewStyle(bg?: string): CSSProperties {
 }
 
 /**
- * The Hero customizer — replaces the old fixed-avatar roster. A live 3D preview
- * of the equipped Hero (2D <HeroMark/> in the lite tier) plus a finish picker (matte/glow/holo/metallic).
+ * The Hero customizer — pick a character model + a body finish. A live 3D preview
+ * of the equipped Hero (the character PNG via <Avatar/> in the lite tier) plus a
+ * finish picker (matte/glow/holo/metallic).
  */
 function CharacterStudio() {
   const hero = useGame((s) => s.hero)
@@ -108,7 +109,7 @@ function CharacterStudio() {
                   sfx.ui()
                 } else if (buyCharacter(c.id)) {
                   setHero({ character: c.id }) // auto-equip on purchase
-                  sfx.levelUp()
+                  sfx.purchase()
                 } else {
                   sfx.error()
                 }
@@ -190,7 +191,7 @@ function CharacterStudio() {
                     sfx.ui()
                   } else if (buyFinish(f.id)) {
                     setHero({ finish: f.id }) // auto-equip on purchase
-                    sfx.levelUp()
+                    sfx.purchase()
                   } else {
                     sfx.error()
                   }
@@ -241,7 +242,7 @@ export function Shop() {
 
   const onBuy = (c: Cosmetic) => {
     if (buy(c.id)) {
-      sfx.levelUp()
+      sfx.purchase()
       equip(c.id) // auto-equip on purchase
     } else sfx.error()
   }
@@ -250,7 +251,7 @@ export function Shop() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="font-terminal text-4xl text-term glow-term">{t('shop.title')}</h2>
+          <h2 className="screen-title font-terminal text-4xl">{t('shop.title')}</h2>
           <p className="mt-1 text-ink-dim">{t('shop.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">

@@ -47,6 +47,8 @@ const SOLUTIONS: Record<string, string> = {
   'boss-proofreader': 'cwthe<Esc>jddcwsave<Esc>',
   // Extra fundamentals (open-above, change-to-end, brackets, transpose, indent)
   't2-open-above': 'Oimport sys<Esc>',
+  't2-append-eol': 'A;<Esc>',
+  't2-insert-bol': 'I# <Esc>',
   't3-change-tail': 'Cinfo<Esc>',
   't3-bracket': 'ci[mono<Esc>',
   't3-transpose': 'xp',

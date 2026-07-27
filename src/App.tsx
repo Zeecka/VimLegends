@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { Hud } from './ui/Hud'
 import { CommandBelt } from './ui/CommandBelt'
@@ -53,11 +53,41 @@ function isMobileViewport(): boolean {
   }
 }
 
-/** A shared verified-score link (?u=<publicId>) opens on the score page. On a
- *  phone, the app opens straight into Quiz mode (the touch-friendly trainer). */
+/** The URL-hash form of a screen, so browser back/forward + refresh work.
+ *  'profile' is a ?u= deep-link (handled separately), so it maps to no hash. */
+function screenToHash(s: Screen): string {
+  switch (s.name) {
+    case 'home':
+    case 'profile':
+      return ''
+    case 'play':
+      return `#play/${s.id}`
+    default:
+      return `#${s.name}`
+  }
+}
+
+/** Parse a screen from a URL hash, or null if it isn't a known route. A #play/<id>
+ *  whose challenge no longer exists falls back to the map. */
+function screenFromHash(hash: string): Screen | null {
+  const h = hash.replace(/^#/, '')
+  if (!h || h === 'home') return { name: 'home' }
+  if (h.startsWith('play/')) {
+    const id = h.slice('play/'.length)
+    return CHALLENGES.some((c) => c.id === id) ? { name: 'play', id } : { name: 'map' }
+  }
+  if (h === 'map' || h === 'arcade' || h === 'quiz' || h === 'shop') return { name: h }
+  return null
+}
+
+/** A shared verified-score link (?u=<publicId>) opens on the score page. Otherwise
+ *  restore the screen from the URL hash (refresh-in-place / deep link); failing
+ *  that, a phone opens straight into Quiz mode (the touch-friendly trainer). */
 function initialScreen(): Screen {
   const u = new URLSearchParams(window.location.search).get('u')
   if (u) return { name: 'profile', publicId: u }
+  const fromHash = screenFromHash(window.location.hash)
+  if (fromHash && fromHash.name !== 'home') return fromHash
   return isMobileViewport() ? { name: 'quiz' } : { name: 'home' }
 }
 
@@ -114,6 +144,38 @@ export default function App() {
       void import('./three/Stage3D')
     })
   }, [tier])
+
+  // Keep the URL hash in sync with the screen so browser back/forward + refresh-in-
+  // place work. play→play transitions replace (so the whole campaign doesn't stack
+  // into history); every other move pushes a new entry. 'profile' stays on its ?u=.
+  const prevScreenRef = useRef<Screen>(screen)
+  useEffect(() => {
+    if (screen.name !== 'profile') {
+      const desired = screenToHash(screen)
+      if (window.location.hash !== desired) {
+        const method =
+          prevScreenRef.current.name === 'play' && screen.name === 'play' ? 'replaceState' : 'pushState'
+        window.history[method](null, '', desired || window.location.pathname + window.location.search)
+      }
+    }
+    prevScreenRef.current = screen
+  }, [screen])
+
+  // Browser back/forward (popstate) and manual hash edits (hashchange) drive the screen.
+  useEffect(() => {
+    const onNav = () => {
+      const u = new URLSearchParams(window.location.search).get('u')
+      if (u) return setScreen({ name: 'profile', publicId: u })
+      const s = screenFromHash(window.location.hash)
+      if (s) setScreen(s)
+    }
+    window.addEventListener('popstate', onNav)
+    window.addEventListener('hashchange', onNav)
+    return () => {
+      window.removeEventListener('popstate', onNav)
+      window.removeEventListener('hashchange', onNav)
+    }
+  }, [])
 
   const go = (s: Screen) => setScreen(s)
   const play = (id: string) => go({ name: 'play', id })
@@ -305,6 +367,9 @@ function Home({
         >
           <motion.div
             className="panel w-full max-w-sm p-6 text-center"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('home.resetTitle')}
             initial={{ scale: 0.92, y: 12, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}

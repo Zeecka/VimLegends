@@ -77,8 +77,8 @@ export const CHARACTER_BY_ID = Object.fromEntries(CHARACTERS.map((c) => [c.id, c
 export const CHARACTER_IDS: CharacterId[] = CHARACTERS.map((c) => c.id)
 export const DEFAULT_CHARACTER: CharacterId = 'astronaut'
 
-/** Ownership key for a character — namespaced like auraSku() so it never collides
- *  with a theme/background/finish id inside the shared `owned` array. */
+/** Ownership key for a character — namespaced (like finishSku()) so it never
+ *  collides with a theme/background/finish id inside the shared `owned` array. */
 export const characterSku = (id: CharacterId): string => `char:${id}`
 
 /** The character skus a fresh save owns for free (just the astronaut). */

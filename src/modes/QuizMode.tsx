@@ -286,7 +286,7 @@ function QuizPicker({
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="font-terminal text-4xl text-term glow-term">{t('quiz.title')}</h2>
+          <h2 className="screen-title font-terminal text-4xl">{t('quiz.title')}</h2>
           <p className="mt-1 text-ink-dim">{t('quiz.subtitle')}</p>
         </div>
         <div className="text-right text-sm">

@@ -70,6 +70,25 @@ export const sfx = {
   star(index = 0) {
     blip([N.C5, N.E5, N.G5][index] ?? N.A5, 0.12, { type: 'sine', vol: 0.06, delay: index * 0.14 })
   },
+  /** A bright two-note tick — reward coins landing. */
+  coin() {
+    blip(N.E5, 0.06, { type: 'square', vol: 0.05 })
+    blip(N.A5, 0.09, { type: 'square', vol: 0.05, delay: 0.06 })
+  },
+  /** Cha-ching for a Shop purchase — distinct from the level-up triad. */
+  purchase() {
+    blip(N.G5, 0.08, { type: 'triangle', vol: 0.055 })
+    blip(N.C5, 0.14, { type: 'triangle', vol: 0.06, delay: 0.09 })
+    blip(N.E5, 0.16, { type: 'sine', vol: 0.05, delay: 0.16 })
+  },
+  /** Triumphant fanfare for a boss defeat — bigger + lower-to-higher than levelUp. */
+  boss() {
+    const seq = [N.C4, N.G4, N.C5, N.E5, N.G5]
+    seq.forEach((f, i) =>
+      blip(f, i === seq.length - 1 ? 0.34 : 0.12, { type: 'sawtooth', vol: 0.06, delay: i * 0.11 }),
+    )
+    blip(N.G5 * 1.5, 0.5, { type: 'sine', vol: 0.04, delay: seq.length * 0.11 }) // high shimmer
+  },
   /** Ascending combo pitch — higher as the combo grows. */
   combo(step: number) {
     blip(440 + Math.min(step, 12) * 45, 0.05, { type: 'square', vol: 0.045 })

@@ -7,7 +7,8 @@ const ParallaxCtx = createContext<Register | null>(null)
  * A pointer-driven parallax container. Layers register themselves and are translated
  * (and slightly overscanned) proportional to their `depth`. All updates happen in a
  * single rAF loop writing transforms directly to the DOM — no React re-renders.
- * Respects prefers-reduced-motion (auto-drifts gently instead of following the pointer).
+ * Respects prefers-reduced-motion: the pointer-follow AND the autonomous drift are
+ * both disabled, leaving a fully static scene (no perpetual background motion).
  */
 export function ParallaxScene({ children, className, style }: { children: ReactNode; className?: string; style?: CSSProperties }) {
   const layers = useRef<{ el: HTMLElement; depth: number }[]>([])
@@ -23,23 +24,18 @@ export function ParallaxScene({ children, className, style }: { children: ReactN
   }
 
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // Reduced motion: no pointer-follow, no autonomous drift — a fully static scene.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
     const onMove = (e: PointerEvent) => {
       target.current.x = (e.clientX / window.innerWidth - 0.5) * 2
       target.current.y = (e.clientY / window.innerHeight - 0.5) * 2
     }
-    if (!reduce) window.addEventListener('pointermove', onMove, { passive: true })
+    window.addEventListener('pointermove', onMove, { passive: true })
 
     let raf = 0
-    let t = 0
     const loop = () => {
       raf = requestAnimationFrame(loop)
-      t += 0.006
-      if (reduce) {
-        // gentle autonomous drift
-        target.current.x = Math.sin(t) * 0.4
-        target.current.y = Math.cos(t * 0.8) * 0.3
-      }
       cur.current.x += (target.current.x - cur.current.x) * 0.06
       cur.current.y += (target.current.y - cur.current.y) * 0.06
       for (const { el, depth } of layers.current) {

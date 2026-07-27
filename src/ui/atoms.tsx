@@ -1,18 +1,39 @@
 import type { ReactNode } from 'react'
+import { motion } from 'framer-motion'
 
-/** Row of up to 3 stars, `value` filled. */
-export function StarRow({ value, size = 20 }: { value: number; size?: number }) {
+/**
+ * Row of up to 3 stars, `value` filled. Pass `animated` to burst each earned star
+ * in with a stagger that matches the per-star `sfx.star()` pings (0.14s apart) —
+ * the result screen was ringing three chimes while the stars appeared all at once.
+ * <MotionConfig reducedMotion="user"> (App root) makes the burst instant for users
+ * who prefer reduced motion.
+ */
+export function StarRow({ value, size = 20, animated = false }: { value: number; size?: number; animated?: boolean }) {
   return (
     <span className="inline-flex gap-1" aria-label={`${value} of 3 stars`}>
-      {[1, 2, 3].map((i) => (
-        <span
-          key={i}
-          style={{ fontSize: size }}
-          className={i <= value ? 'text-amber glow-amber' : 'text-border'}
-        >
-          ★
-        </span>
-      ))}
+      {[1, 2, 3].map((i) => {
+        const filled = i <= value
+        const cls = filled ? 'text-amber glow-amber' : 'text-border'
+        if (!animated || !filled) {
+          return (
+            <span key={i} style={{ fontSize: size }} className={cls}>
+              ★
+            </span>
+          )
+        }
+        return (
+          <motion.span
+            key={i}
+            style={{ fontSize: size, display: 'inline-block' }}
+            className={cls}
+            initial={{ scale: 0, rotate: -60, opacity: 0 }}
+            animate={{ scale: [0, 1.35, 1], rotate: [-60, 8, 0], opacity: 1 }}
+            transition={{ delay: (i - 1) * 0.14, duration: 0.42, ease: 'easeOut', times: [0, 0.6, 1] }}
+          >
+            ★
+          </motion.span>
+        )
+      })}
     </span>
   )
 }

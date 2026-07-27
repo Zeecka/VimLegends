@@ -253,7 +253,7 @@ export default function Hero3D({
 
   // Bloom only where there's something emissive to catch it, and only in the
   // interactive showcase (keeps the tiny HeroPanel portrait + its alpha simple).
-  const wantsBloom = interactive && (hero.aura.intensity > 0.01 || hero.finish === 'glow' || hero.finish === 'holo')
+  const wantsBloom = interactive && (hero.finish === 'glow' || hero.finish === 'holo')
   const isMetallic = hero.finish === 'metallic'
 
   return (

@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  DEFAULT_HERO_LOOK,
-  INITIAL_HERO,
-  LEGACY_AVATAR_IDS,
-  heroLookFrom,
-  normalizeHero,
-} from '../src/game/heroParts'
+import { INITIAL_HERO, LEGACY_AVATAR_IDS, normalizeHero } from '../src/game/heroParts'
 import { COSMETIC_BY_ID, COSMETICS, DEFAULTS, FREE_COSMETICS } from '../src/game/cosmetics'
 import {
   CHARACTERS,
@@ -15,51 +9,34 @@ import {
 } from '../src/game/characters'
 
 /**
- * The Hero customizer replaced the fixed-avatar roster in save v10. These cover
- * the migration path a legacy save takes: the old `{ primary, secondary, effect }`
- * shape is coerced to the canonical HeroCustom, and nothing dangles.
+ * The Hero customization is now just { finish, character } — the per-zone recolor
+ * + procedural accessory/visor/aura system was pruned (v16). These cover the
+ * migration path a legacy save takes: any older blob is coerced to the reduced
+ * canonical shape and nothing dangles.
  */
 describe('hero customization', () => {
-  it('resolves null colors to the vim-purple default look', () => {
-    expect(heroLookFrom(INITIAL_HERO)).toEqual(DEFAULT_HERO_LOOK)
-    expect(DEFAULT_HERO_LOOK.body).toBe('#7c6bff')
+  it('defaults to a matte finish + the free astronaut', () => {
+    expect(INITIAL_HERO).toEqual({ finish: 'matte', character: 'astronaut' })
   })
 
-  it('keeps custom colors over the defaults', () => {
-    const look = heroLookFrom({ ...INITIAL_HERO, body: '#ff0000' })
-    expect(look.body).toBe('#ff0000')
-    expect(look.trim).toBe(DEFAULT_HERO_LOOK.trim)
-  })
-
-  it('normalizes a legacy hero ({ primary, secondary, effect }) to the canonical shape', () => {
-    // pre-v10 stored { primary, secondary, effect } directly on `hero`.
-    const hero = normalizeHero({ primary: '#123456', secondary: '#abcdef', effect: 'fire' })
-    expect(hero.body).toBe('#123456')
-    expect(hero.trim).toBe('#abcdef')
-    expect(hero.aura.style).toBe('fire')
-    expect(hero.accessory).toBe('none')
-    expect(hero.visorStyle).toBe('bar')
-  })
-
-  it('round-trips a full hero unchanged', () => {
-    const hero = {
-      body: '#123456',
-      trim: '#abcdef',
-      visor: '#000000',
-      accessory: 'tophat' as const,
-      visorStyle: 'goggles' as const,
-      finish: 'metallic' as const,
-      aura: { color: '#ffffff', style: 'rings' as const, intensity: 0.25 },
-      character: 'astronaut' as const,
-    }
-    expect(normalizeHero(hero)).toEqual(hero)
+  it('normalizes a legacy hero blob, dropping removed fields', () => {
+    // Older saves carried per-zone colors + accessory/visor/aura; all ignored now.
+    const hero = normalizeHero({
+      primary: '#123456',
+      secondary: '#abcdef',
+      effect: 'fire',
+      accessory: 'tophat',
+      visorStyle: 'goggles',
+      aura: { color: '#ffffff', style: 'rings', intensity: 0.25 },
+      finish: 'metallic',
+      character: 'swat',
+    })
+    expect(hero).toEqual({ finish: 'metallic', character: 'swat' })
   })
 
   it('falls back to defaults on garbage input', () => {
     expect(normalizeHero(null)).toEqual(INITIAL_HERO)
-    expect(normalizeHero({ body: 'not-a-color', accessory: 'jetpack', visorStyle: 9 })).toEqual(INITIAL_HERO)
-    // Shorthand hex is rejected: the server contract is 6-digit.
-    expect(normalizeHero({ body: '#fff' }).body).toBeNull()
+    expect(normalizeHero({ finish: 'nope', character: 'jetpack' })).toEqual(INITIAL_HERO)
   })
 
   it('validates the body finish, defaulting to matte', () => {
@@ -67,11 +44,6 @@ describe('hero customization', () => {
     expect(normalizeHero({ finish: 'metallic' }).finish).toBe('metallic')
     expect(normalizeHero({ finish: 'nope' }).finish).toBe('matte')
     expect(normalizeHero({}).finish).toBe('matte')
-  })
-
-  it('clamps aura intensity into 0..1', () => {
-    expect(normalizeHero({ aura: { intensity: 5 } }).aura.intensity).toBe(1)
-    expect(normalizeHero({ aura: { intensity: -3 } }).aura.intensity).toBe(0)
   })
 })
 

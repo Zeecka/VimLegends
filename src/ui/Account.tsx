@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useFocusTrap } from './useFocusTrap'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { login, logout, useAccount } from '../game/account'
@@ -29,21 +30,17 @@ export function AccountModal({
 }) {
   const providers = useAccount((s) => s.providers)
   const t = useT()
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(panelRef, onClose)
 
   return createPortal(
     <div className="fixed inset-0 z-40 grid place-items-center bg-bg/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <motion.div
+        ref={panelRef}
+        tabIndex={-1}
         initial={{ opacity: 0, y: 12, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="panel w-full max-w-sm p-6"
+        className="panel w-full max-w-sm p-6 outline-none"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { CheatsheetButton } from './Cheatsheet'
 import { Emoji } from './Emoji'
 import { KeyedText } from './atoms'
+import { useFocusTrap } from './useFocusTrap'
 import { useT } from '../game/i18n'
 
 /**
@@ -15,18 +16,7 @@ import { useT } from '../game/i18n'
 export default function HowToPlay({ onClose }: { onClose: () => void }) {
   const panelRef = useRef<HTMLDivElement>(null)
   const t = useT()
-  useEffect(() => {
-    panelRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        e.stopPropagation()
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey, true)
-    return () => window.removeEventListener('keydown', onKey, true)
-  }, [onClose])
+  useFocusTrap(panelRef, onClose)
 
   const steps = [
     { k: t('howto.step1.title'), body: t('howto.step1.body') },

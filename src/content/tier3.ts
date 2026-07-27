@@ -188,7 +188,7 @@ export const tier3: Challenge[] = [
       targetText: ['<section>', '  <h1>Welcome</h1>', '  <p>Learn Vim by playing.</p>', '</section>'].join('\n'),
       describe: 'The heading reads: Welcome',
     },
-    par: 12, // cit (3) Welcome (7) + Esc
+    par: 11, // cit (3) + Welcome (7) + Esc (1)
     hint: '`cit` = change inner tag — it empties everything between <h1> and </h1>, wherever your cursor is inside the element. Type `Welcome`, then `Esc`.',
   },
   {

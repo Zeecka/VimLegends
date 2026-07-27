@@ -26,13 +26,22 @@ const publicHost = process.env.VITE_PUBLIC_HOST
 // X-Frame-Options + frame-ancestors still fully close the clickjacking gap.
 // Keep this in lockstep with the strict CSP in nginx.conf (which the static
 // production build serves instead).
+// Google AdSense: the loader fetches further scripts, opens ad iframes, and beacons
+// back, all from Google's ad-serving hosts — allow-listed here (script/frame/connect)
+// or the CSP kills the ads. img-src already permits https: so ad creatives load.
+// Keep this in lockstep with the AD_* additions in nginx.conf.
+const AD_SCRIPT = 'https://*.googlesyndication.com https://*.googleadservices.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net'
+const AD_FRAME = 'https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com'
+const AD_CONNECT = 'https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net https://*.gstatic.com'
+
 const DEV_CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // HMR / react-refresh preamble
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${AD_SCRIPT}`, // HMR / react-refresh preamble + AdSense
   "style-src 'self' 'unsafe-inline'", // framer-motion / Tailwind inline styles
-  "img-src 'self' https: data:", // OAuth avatars, emoji/thumbnail data URIs
+  "img-src 'self' https: data:", // OAuth avatars, emoji/thumbnail data URIs, ad creatives
   "font-src 'self'",
-  "connect-src 'self' https://api.github.com ws: wss:", // API + GitHub star count + HMR socket
+  `connect-src 'self' https://api.github.com ws: wss: ${AD_CONNECT}`, // API + GitHub star count + HMR socket + AdSense
+  `frame-src ${AD_FRAME}`, // AdSense ad iframes
   "worker-src 'self' blob:", // three.js decoder workers
   "object-src 'none'",
   "base-uri 'self'",

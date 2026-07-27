@@ -115,6 +115,30 @@ export const tier2: Challenge[] = [
     hint: '`o` opens a line BELOW the cursor; its capital, `O`, opens one ABOVE — and drops you into insert mode there. Type `import sys`, then `Esc`.',
   },
   {
+    id: 't2-append-eol',
+    tier: 2,
+    title: 'End of the Line',
+    brief: 'Add a `;` at the very end of the line — from anywhere on it — with `A`.',
+    taughtCommands: ['A', 'esc'],
+    startText: 'const port = 3000',
+    startCursor: { line: 1, ch: 0 }, // at the start, so A (jump to EOL + insert) beats reaching for $
+    goal: { targetText: 'const port = 3000;', describe: 'Buffer reads: const port = 3000;' },
+    par: 3, // A ; Esc
+    hint: '`A` jumps to the END of the line AND enters insert mode in one press — no need to reach for `$` first. Type `;`, then `Esc`.',
+  },
+  {
+    id: 't2-insert-bol',
+    tier: 2,
+    title: 'Comment It Out',
+    brief: 'Comment out the line: put `# ` at the front — from anywhere on it — with `I`.',
+    taughtCommands: ['I', 'esc'],
+    startText: 'rm -rf /tmp/cache',
+    startCursor: { line: 1, ch: 8 }, // mid-line, so I (jump to first char + insert) is the move
+    goal: { targetText: '# rm -rf /tmp/cache', describe: 'Buffer reads: # rm -rf /tmp/cache' },
+    par: 4, // I # Space Esc
+    hint: '`I` jumps to the FIRST character of the line AND enters insert mode — the mirror of `A`. Type `# `, then `Esc`.',
+  },
+  {
     id: 't2-capstone',
     tier: 2,
     title: 'Quick Refactor',

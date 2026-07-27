@@ -29,18 +29,14 @@
     "@types/three": "^0.170.0",
     "codemirror": "^6.0.2",
     "framer-motion": "^12.42.2",
-    "howler": "^2.2.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "three": "0.170.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@dicebear/collection": "^9.4.2",
-    "@dicebear/core": "^9.4.3",
     "@eslint/js": "^9.39.5",
     "@tailwindcss/vite": "^4.3.2",
-    "@types/howler": "^2.2.13",
     "@types/node": "^26.1.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",

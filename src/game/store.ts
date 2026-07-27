@@ -5,20 +5,12 @@ import type { QualitySetting } from './quality'
 import { levelFromXp, starsFor, xpForChallenge } from './xp'
 import { COSMETIC_BY_ID, DEFAULTS, FREE_COSMETICS, LEGACY_DEFAULT_BACKGROUNDS, LEGACY_DEFAULT_THEMES } from './cosmetics'
 import {
-  AURA_STYLES,
-  DEFAULT_OWNED_AURAS,
   DEFAULT_OWNED_FINISHES,
-  DEFAULT_OWNED_PALETTES,
   FINISHES,
   INITIAL_HERO,
   LEGACY_AVATAR_IDS,
-  PALETTE_BY_ID,
-  auraSku,
   finishSku,
   normalizeHero,
-  paletteSku,
-  type AuraStyle,
-  type HeroAura,
   type HeroCustom,
   type HeroFinish,
 } from './heroParts'
@@ -71,15 +63,11 @@ interface GameStore extends Persisted {
   recordQuiz: (correct: number, total: number) => { isNewBest: boolean; coinsGained: number }
   buyItem: (id: string) => boolean
   equipItem: (id: string) => void
-  /** Buy an aura style (coins → `owned`). Returns false if unaffordable/owned. */
-  buyAura: (id: AuraStyle) => boolean
   /** Buy a character (coins → `owned`). Returns false if unaffordable/owned. */
   buyCharacter: (id: CharacterId) => boolean
   /** Buy a body finish (coins → `owned`). Returns false if unaffordable/owned. */
   buyFinish: (id: HeroFinish) => boolean
-  /** Buy a color palette (coins → `owned`). Returns false if unaffordable/owned. */
-  buyPalette: (id: string) => boolean
-  setHero: (partial: Partial<Omit<HeroCustom, 'aura'>> & { aura?: Partial<HeroAura> }) => void
+  setHero: (partial: Partial<HeroCustom>) => void
   bumpStreak: () => void
   toggleSound: () => void
   setQuality: (q: QualitySetting) => void
@@ -110,10 +98,8 @@ const initial: Persisted = {
   quizBest: 0,
   owned: [
     ...FREE_COSMETICS,
-    ...DEFAULT_OWNED_AURAS,
     ...DEFAULT_OWNED_CHARACTERS,
     ...DEFAULT_OWNED_FINISHES,
-    ...DEFAULT_OWNED_PALETTES,
   ],
   equipped: { ...DEFAULTS },
   hero: INITIAL_HERO,
@@ -223,15 +209,6 @@ export const useGame = create<GameStore>()(
         set({ equipped: { ...s.equipped, [item.kind]: id } })
       },
 
-      buyAura: (id) => {
-        const style = AURA_STYLES.find((a) => a.id === id)
-        const sku = auraSku(id)
-        const s = get()
-        if (!style || s.owned.includes(sku) || s.coins < style.price) return false
-        set({ coins: s.coins - style.price, owned: [...s.owned, sku] })
-        return true
-      },
-
       buyCharacter: (id) => {
         const cfg = CHARACTER_BY_ID[id]
         const sku = characterSku(id)
@@ -250,26 +227,20 @@ export const useGame = create<GameStore>()(
         return true
       },
 
-      buyPalette: (id) => {
-        const palette = PALETTE_BY_ID[id]
-        const sku = paletteSku(id)
-        const s = get()
-        if (!palette || s.owned.includes(sku) || s.coins < palette.price) return false
-        set({ coins: s.coins - palette.price, owned: [...s.owned, sku] })
-        return true
-      },
-
-      setHero: (partial) =>
-        set((s) => ({ hero: { ...s.hero, ...partial, aura: { ...s.hero.aura, ...(partial.aura ?? {}) } } })),
+      setHero: (partial) => set((s) => ({ hero: { ...s.hero, ...partial } })),
 
       bumpStreak: () => {
         const s = get()
         const today = todayKey()
         const last = s.streak.lastPlayed
-        if (last === today) return
+        if (last === today) return // already counted today — no double reward
         let count = 1
         if (last && daysBetween(last, today) === 1) count = s.streak.count + 1
-        set({ streak: { count, lastPlayed: today } })
+        // Reward showing up: a few coins per active day, with milestone bonuses so a
+        // long streak actually pays off (it was a purely cosmetic counter before).
+        const MILESTONES: Record<number, number> = { 3: 15, 7: 40, 14: 80, 30: 200 }
+        const coinsGained = 3 + (MILESTONES[count] ?? 0)
+        set({ streak: { count, lastPlayed: today }, coins: s.coins + coinsGained })
       },
 
       toggleSound: () => set((s) => ({ soundOn: !s.soundOn })),
@@ -285,7 +256,7 @@ export const useGame = create<GameStore>()(
       // adoptLegacySave() above copies them to this key on first load so no
       // progress is lost. See that helper for the one-time migration.
       name: 'vimlegends-save',
-      version: 15,
+      version: 16,
       migrate: (persisted, version) => {
         const p = (persisted ?? {}) as Record<string, unknown>
         const pe = (p.equipped ?? {}) as Record<string, unknown>
@@ -322,7 +293,14 @@ export const useGame = create<GameStore>()(
         // v10: the fixed-avatar roster + block cursor were removed in favor of the
         // single customizable Hero. Drop 'platform' and all old avatar ids from
         // `owned`, and repair any now-unknown equipped background.
-        merged.owned = merged.owned.filter((id) => id !== 'platform' && !LEGACY_AVATAR_IDS.includes(id))
+        merged.owned = merged.owned.filter(
+          (id) =>
+            id !== 'platform' &&
+            !LEGACY_AVATAR_IDS.includes(id) &&
+            // v16: the procedural aura/palette customizer was removed; drop its skus.
+            !id.startsWith('aura:') &&
+            !id.startsWith('palette:'),
+        )
         if (!COSMETIC_BY_ID[merged.equipped.background]) {
           merged.equipped.background = DEFAULTS.background
         }
@@ -332,13 +310,6 @@ export const useGame = create<GameStore>()(
         // Shop to re-equip.
         if (version < 9 && merged.equipped.background === 'synthwave') {
           merged.equipped.background = DEFAULTS.background
-        }
-        // v11: aura styles became Shop purchases. Grant ownership of whatever aura
-        // the player already had equipped, so upgrading never revokes their look
-        // (the "migration dividend"). New paid styles still cost coins.
-        if (version < 11) {
-          const equippedSku = auraSku(merged.hero.aura.style)
-          if (!merged.owned.includes(equippedSku)) merged.owned = [...merged.owned, equippedSku]
         }
         // v12: the first-run primer moved from Home to the first campaign level.
         // Existing players have already used the app, so don't nag them — mark it
@@ -355,7 +326,10 @@ export const useGame = create<GameStore>()(
         // (astronaut/swat/agent/soldier/engineer) and the procedural accessory/aura +
         // per-zone recolor were removed. normalizeHero coerces any old hero.character
         // (robot/brute/…) to the free 'astronaut'; the `...initial.owned` union grants
-        // char:astronaut. Old char:/palette skus linger harmlessly in `owned`.
+        // char:astronaut.
+        // v16: the dead accessory/visor/aura/palette customizer was pruned entirely.
+        // normalizeHero now returns just { finish, character }; the owned filter above
+        // drops any lingering aura:/palette: skus. No id renames → save-safe.
         return merged
       },
       partialize: (s): Persisted => ({

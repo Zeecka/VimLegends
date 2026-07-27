@@ -58,6 +58,13 @@ export function ArcadeMode() {
   const stRef = useRef(st)
   stRef.current = st
   const lastWhack = useRef(0)
+  // Brief board-border flash on a whack (hit) or a wall-bump (miss) — parity with
+  // the tmux arcade, which had this feedback while the mole game only played a sound.
+  const [flash, setFlash] = useState<'hit' | 'miss' | null>(null)
+  const flashFor = (kind: 'hit' | 'miss') => {
+    setFlash(kind)
+    window.setTimeout(() => setFlash(null), 160)
+  }
 
   const start = () => {
     setSt(freshState())
@@ -103,7 +110,10 @@ export function ArcadeMode() {
       const s = stRef.current
       const r = clamp(s.cursor.r + d[0], 0, ROWS - 1)
       const c = clamp(s.cursor.c + d[1], 0, COLS - 1)
-      if (r === s.cursor.r && c === s.cursor.c) return // hit a wall
+      if (r === s.cursor.r && c === s.cursor.c) {
+        flashFor('miss') // bumped a wall
+        return
+      }
 
       if (r === s.mole.r && c === s.mole.c) {
         const now = performance.now()
@@ -111,6 +121,7 @@ export function ArcadeMode() {
         lastWhack.current = now
         const gained = 10 + (combo - 1) * 3
         sfx.combo(combo)
+        flashFor('hit')
         setSt({ cursor: { r, c }, mole: randomCell({ r, c }), score: s.score + gained, combo })
       } else {
         sfx.key()
@@ -125,7 +136,7 @@ export function ArcadeMode() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-end justify-between">
         <div>
-          <h2 className="font-terminal text-4xl text-amber glow-amber">{t('arcade.title')}</h2>
+          <h2 className="screen-title font-terminal text-4xl">{t('arcade.title')}</h2>
           <p className="mt-1 text-ink-dim">
             <KeyedText text={t('arcade.tagline')} />
           </p>
@@ -139,31 +150,35 @@ export function ArcadeMode() {
       {/* Live stats — only while a round runs, so the ready / over states stay clean. */}
       {phase === 'playing' && (
         <div className="mt-6 flex items-center gap-6">
-        <div>
-          <div className="text-xs text-ink-dim">{t('arcade.score')}</div>
-          <div className="font-terminal text-3xl text-term tabular-nums">{st.score}</div>
-        </div>
-        <div>
-          <div className="text-xs text-ink-dim">{t('arcade.combo')}</div>
-          <div className="font-terminal text-3xl text-magenta tabular-nums">×{st.combo}</div>
-        </div>
-        <div className="ml-auto w-40">
-          <div className="mb-1 flex justify-between text-xs text-ink-dim">
-            <span>{t('arcade.time')}</span>
-            <span className="tabular-nums">{timeLeft}s</span>
+          <div>
+            <div className="text-xs text-ink-dim">{t('arcade.score')}</div>
+            <div className="font-terminal text-3xl text-term tabular-nums">{st.score}</div>
           </div>
-          <div className="h-2 overflow-hidden rounded-full border border-border bg-panel-2">
-            <div
-              className="h-full bg-amber transition-[width] duration-1000 ease-linear"
-              style={{ width: `${(timeLeft / GAME_SECONDS) * 100}%` }}
-            />
+          <div>
+            <div className="text-xs text-ink-dim">{t('arcade.combo')}</div>
+            <div className="font-terminal text-3xl text-magenta tabular-nums">×{st.combo}</div>
           </div>
-        </div>
+          <div className="ml-auto w-40">
+            <div className="mb-1 flex justify-between text-xs text-ink-dim">
+              <span>{t('arcade.time')}</span>
+              <span className="tabular-nums">{timeLeft}s</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full border border-border bg-panel-2">
+              <div
+                className="h-full bg-amber transition-[width] duration-1000 ease-linear"
+                style={{ width: `${(timeLeft / GAME_SECONDS) * 100}%` }}
+              />
+            </div>
+          </div>
         </div>
       )}
 
       {/* Board */}
-      <div className="panel relative mt-4 grid place-items-center overflow-hidden p-6">
+      <div
+        className={`panel relative mt-4 grid place-items-center overflow-hidden p-6 transition-colors duration-150 ${
+          flash === 'hit' ? 'border-term' : flash === 'miss' ? 'border-danger' : ''
+        }`}
+      >
         <div
           className="grid gap-1"
           style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}

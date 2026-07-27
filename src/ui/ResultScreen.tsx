@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { StarRow, KeyCap, KeyedText } from './atoms'
 import { Emoji } from './Emoji'
+import { Confetti } from './Confetti'
 import { sfx } from '../game/sound'
 import { COMMANDS, COMMANDS_BY_ID } from '../game/commands'
 import { useGame, MASTERY_THRESHOLD, type CompleteOutcome } from '../game/store'
@@ -31,10 +32,16 @@ export function ResultScreen({ outcome, keystrokes, par, boss, hasNext, nextLabe
   const coins = useGame((s) => s.coins)
   const t = useT()
   const [shareMsg, setShareMsg] = useState<string | null>(null)
+  // A win is worth celebrating when it's a boss, a flawless 3-star, or a level-up.
+  const celebrate = boss || outcome.stars === 3 || outcome.leveledUp
+  const [confetti, setConfetti] = useState(celebrate)
 
   useEffect(() => {
     for (let i = 0; i < outcome.stars; i++) sfx.star(i)
-    if (outcome.leveledUp) window.setTimeout(() => sfx.levelUp(), 520)
+    if (outcome.coinsGained > 0) window.setTimeout(() => sfx.coin(), outcome.stars * 140 + 140)
+    // Boss defeat gets its own fanfare (bigger than a level-up); otherwise a level-up plays.
+    if (boss) window.setTimeout(() => sfx.boss(), 320)
+    else if (outcome.leveledUp) window.setTimeout(() => sfx.levelUp(), 520)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -78,6 +85,18 @@ export function ResultScreen({ outcome, keystrokes, par, boss, hasNext, nextLabe
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
+      {/* Boss defeat gets a brief magenta screen-wash so it reads as bigger than a normal solve. */}
+      <AnimatePresence>
+        {boss && (
+          <motion.div
+            className="pointer-events-none absolute inset-0 bg-magenta/25"
+            initial={{ opacity: 0.7 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+          />
+        )}
+      </AnimatePresence>
+      {confetti && <Confetti boss={boss} onDone={() => setConfetti(false)} />}
       <motion.div
         className="panel w-full max-w-md p-8 text-center"
         initial={{ scale: 0.85, y: 20 }}
@@ -89,7 +108,7 @@ export function ResultScreen({ outcome, keystrokes, par, boss, hasNext, nextLabe
         </p>
 
         <div className="mt-4 flex justify-center">
-          <StarRow value={outcome.stars} size={40} />
+          <StarRow value={outcome.stars} size={40} animated />
         </div>
 
         <div className="mt-5 flex items-center justify-center gap-6 text-sm">

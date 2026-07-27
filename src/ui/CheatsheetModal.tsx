@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { filterCheatsheetSections, downloadCheatsheet } from '../game/cheatsheet'
@@ -6,6 +6,7 @@ import { downloadCheatsheetPdf } from '../game/pdf'
 import { useGame, MASTERY_THRESHOLD } from '../game/store'
 import { COMMANDS } from '../game/commands'
 import { Emoji } from './Emoji'
+import { useFocusTrap } from './useFocusTrap'
 import { sfx } from '../game/sound'
 import { useT } from '../game/i18n'
 
@@ -24,18 +25,7 @@ export default function CheatsheetModal({ onClose }: { onClose: () => void }) {
   const sections = useMemo(() => filterCheatsheetSections(q), [q])
   const mastered = COMMANDS.filter((c) => (mastery[c.id] ?? 0) >= MASTERY_THRESHOLD).length
 
-  useEffect(() => {
-    panelRef.current?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        e.stopPropagation()
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey, true)
-    return () => window.removeEventListener('keydown', onKey, true)
-  }, [onClose])
+  useFocusTrap(panelRef, onClose)
 
   const toast = (msg: string) => {
     setFlash(msg)

@@ -38,6 +38,8 @@ export const COMMANDS: VimCommand[] = [
   { id: 'f', keys: 'f{c}', label: 'find char', tier: 2, category: 'motion' },
   { id: 'cw', keys: 'cw', label: 'change word', tier: 2, category: 'edit' },
   { id: 'O', keys: 'O', label: 'open line above', tier: 2, category: 'modes' },
+  { id: 'I', keys: 'I', label: 'insert at line start', tier: 2, category: 'modes' },
+  { id: 'A', keys: 'A', label: 'append at line end', tier: 2, category: 'modes' },
 
   // Tier 3 — Faster
   { id: 'd-motion', keys: 'd{m}', label: 'delete + motion', tier: 3, category: 'operator' },
