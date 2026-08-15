@@ -3,6 +3,11 @@ import { CHALLENGES, WORLDS, challengesForTier, tierUnlocked } from '../src/cont
 import { COMMANDS, COMMANDS_BY_ID } from '../src/game/commands'
 import { stagesOf } from '../src/game/types'
 import { createEditor, goalMet } from './driver'
+import { en } from '../src/game/locales/en'
+import { fr } from '../src/game/locales/fr'
+import { es } from '../src/game/locales/es'
+import { ru } from '../src/game/locales/ru'
+import { zh } from '../src/game/locales/zh'
 
 describe('content integrity', () => {
   it('challenge ids are unique', () => {
@@ -71,6 +76,38 @@ describe('content integrity', () => {
         expect(goalMet(view, first.goal), `${ch.id}: stage 1 goal met before any keystroke`).toBe(false)
       } finally {
         view.destroy()
+      }
+    }
+  })
+})
+
+// KeyedText renders `backtick-quoted` spans as keycaps; the backtick KEY itself
+// is written `{backtick}a`. An odd backtick count means a span never closed and
+// the copy renders broken (regression: t4-marks once ended in a bare `a).
+describe('copy markup (KeyedText backticks)', () => {
+  const evenBackticks = (s: string) => ((s.match(/`/g) ?? []).length) % 2 === 0
+
+  it('challenge copy has balanced backticks', () => {
+    for (const ch of CHALLENGES) {
+      const copies: Array<[string, string]> = [
+        ['title', ch.title],
+        ['brief', ch.brief],
+        ['hint', ch.hint],
+      ]
+      stagesOf(ch).forEach((stage, i) => {
+        copies.push([`stage ${i + 1} describe`, stage.goal.describe])
+        if (stage.brief) copies.push([`stage ${i + 1} brief`, stage.brief])
+      })
+      for (const [what, text] of copies) {
+        expect(evenBackticks(text), `${ch.id} ${what}: unbalanced backticks in "${text}"`).toBe(true)
+      }
+    }
+  })
+
+  it('locale strings have balanced backticks', () => {
+    for (const [lang, dict] of Object.entries({ en, fr, es, ru, zh })) {
+      for (const [key, text] of Object.entries(dict)) {
+        expect(evenBackticks(text), `${lang} ${key}: unbalanced backticks in "${text}"`).toBe(true)
       }
     }
   })

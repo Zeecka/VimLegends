@@ -69,11 +69,17 @@ export function KeyCap({ children }: { children: ReactNode }) {
  * becomes a <KeyCap>, the rest renders as plain text. This is how authored
  * copy (briefs, hints) names a key without content files importing React —
  * they stay pure data. Odd indices of the split are the captures.
+ *
+ * A literal backtick KEY (vim's mark jump, `a) can't be spelled with the
+ * delimiter itself — write `{backtick}` inside the span: `{backtick}a` renders
+ * as a keycap reading `a.
  */
 export function KeyedText({ text }: { text: string }) {
   return (
     <>
-      {text.split(/`([^`]+)`/g).map((part, i) => (i % 2 === 1 ? <KeyCap key={i}>{part}</KeyCap> : part))}
+      {text
+        .split(/`([^`]+)`/g)
+        .map((part, i) => (i % 2 === 1 ? <KeyCap key={i}>{part.replace(/\{backtick\}/g, '`')}</KeyCap> : part))}
     </>
   )
 }

@@ -26,7 +26,10 @@ export interface VimEditorHandle {
   focus: () => void
 }
 
-const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Dead'])
+// Includes AltGraph: on AZERTY (and many non-US layouts) chars like # or @ are
+// typed with AltGr, whose standalone keydown must not count as an extra keystroke
+// — otherwise par (and 3 stars) is unreachable on those layouts.
+const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'AltGraph', 'Meta', 'CapsLock', 'Dead'])
 
 function goalMet(view: EditorView, goal: Goal, vim: VimCtx): boolean {
   if (goal.targetText !== undefined) {

@@ -1,4 +1,5 @@
 import type { Challenge } from '../game/types'
+import { allOf, anyOf, bufferEquals, inMode } from '../game/verify'
 
 type CMView = import('@codemirror/view').EditorView
 
@@ -134,8 +135,16 @@ export const tier2: Challenge[] = [
     taughtCommands: ['I', 'esc'],
     startText: 'rm -rf /tmp/cache',
     startCursor: { line: 1, ch: 8 }, // mid-line, so I (jump to first char + insert) is the move
-    goal: { targetText: '# rm -rf /tmp/cache', describe: 'Buffer reads: # rm -rf /tmp/cache' },
-    par: 4, // I # Space Esc
+    goal: {
+      // `#` with or without the trailing space both read as a comment — accept
+      // both. inMode('normal') keeps the closing Esc required (like targetText).
+      predicate: allOf(
+        anyOf(bufferEquals('# rm -rf /tmp/cache'), bufferEquals('#rm -rf /tmp/cache')),
+        inMode('normal'),
+      ),
+      describe: 'The line starts with # (it is commented out)',
+    },
+    par: 4, // I # Space Esc — the spaceless `I # Esc` solve comes in under par
     hint: '`I` jumps to the FIRST character of the line AND enters insert mode — the mirror of `A`. Type `# `, then `Esc`.',
   },
   {

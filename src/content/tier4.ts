@@ -191,13 +191,13 @@ export const tier4: Challenge[] = [
       describe: 'Variables renamed; the two in-string counts survive',
     },
     par: 24, // :%s/count/total/gc<CR> then y n y n y
-    hint: 'The `c` flag makes `:s` pause on every match: `y` replaces, `n` skips (`a` = all the rest, `q` = quit). Surgical mass-edit.',
+    hint: 'Run `:%s/count/total/gc` — the `c` flag makes `:s` pause on every match: `y` replaces, `n` skips (`a` = all the rest, `q` = quit). Surgical mass-edit.',
   },
   {
     id: 't4-marks',
     tier: 4,
     title: 'X Marks the Spot',
-    brief: 'Drop mark a on the FIXME (`ma`), go fix the TODO at the top (`gg`, `dd`), then snap back with `a.',
+    brief: 'Drop mark a on the FIXME (`ma`), go fix the TODO at the top (`gg`, `dd`), then snap back with `{backtick}a`.',
     taughtCommands: ['marks', 'gg', 'dd'],
     startText: [
       '# TODO: rename this file',
@@ -223,6 +223,6 @@ export const tier4: Challenge[] = [
       describe: 'TODO line gone · mark a set · cursor back on the FIXME',
     },
     par: 8, // ma gg dd `a
-    hint: '`ma` bookmarks this spot. After editing elsewhere, `a (backtick-a) teleports you back — the mark even survives the lines shifting.',
+    hint: '`ma` bookmarks this spot. After editing elsewhere, `{backtick}a` (backtick-a) teleports you back — the mark even survives the lines shifting.',
   },
 ]

@@ -97,7 +97,7 @@ export const tier3: Challenge[] = [
     id: 't3-dupe-line',
     tier: 3,
     title: 'Copy That',
-    brief: 'Expose port 443 too: duplicate the port line with `yy` then `p`.',
+    brief: 'Duplicate the port line with `yy` then `p` — step one of exposing a second port.',
     taughtCommands: ['y-motion', 'p'],
     startText: ['ports:', '  - "8080:80"'].join('\n'),
     startCursor: { line: 2, ch: 0 },

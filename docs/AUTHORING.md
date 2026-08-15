@@ -24,6 +24,19 @@ Everything you need to add levels, bosses, and whole worlds. Challenges are **pu
 }
 ```
 
+### Copy conventions (brief / hint / describe)
+
+Wrap the keys the player presses in backticks — `KeyedText` (src/ui/atoms.tsx) renders
+every backtick-quoted span as a keycap. Two special spellings:
+
+- **Adjacent keycaps** chain with back-to-back spans: `` `j``.` `` renders the j and .
+  keycaps side by side.
+- **The backtick key itself** can't be spelled with the delimiter — write `{backtick}`
+  inside the span: `` `{backtick}a` `` renders one keycap reading `` `a `` (vim's mark jump).
+
+`tests/content.test.ts` fails on unbalanced backticks in any brief/hint/describe or
+locale string, so a broken span can't ship.
+
 ## 🎯 Two kinds of goals
 
 **1 · Exact text** — `goal.targetText`. Simple, self-verifying: the wrong method usually

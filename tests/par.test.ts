@@ -101,6 +101,13 @@ describe('par validator (reference solutions)', () => {
     })
   }
 
+  it('t2-insert-bol: `#` without the trailing space also wins', () => {
+    const ch = byId('t2-insert-bol')
+    const res = playChallenge(ch, 'I#<Esc>')
+    expect(res.solvedAtKey, `not solved — final buffer:\n${res.finalText}`).not.toBeNull()
+    expect(res.solvedAtKey!).toBeLessThanOrEqual(ch.par)
+  })
+
   it('boss stage ratchet: goals complete in order', () => {
     const ch = byId('boss-gatekeeper')
     // Stage 1 only:
