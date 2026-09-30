@@ -4,7 +4,9 @@ services:
     image: vimlegends:latest
     container_name: vimlegends
     ports:
-      - "8971:80"
+      # Bound to loopback: nginx is the only way in, so the vhost's server_name check
+      # (and any auth on it) cannot be skipped by hitting http://<host-IP>:8971 direct.
+      - "127.0.0.1:8971:80"
     restart: unless-stopped
     depends_on:
       - api
